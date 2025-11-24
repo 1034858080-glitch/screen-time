@@ -1,6 +1,10 @@
 <template>
     <div class="screen-time">
         <!-- 顶部导航 -->
+        <div class="header">
+            <div>{{ updateTime }}</div>
+            <div><img src='/src/assets/images/wifi.png' /></div>
+        </div>
         <div class="nav-bar">
             <span class="back">返回</span>
             <span class="title">所有设备</span>
@@ -16,8 +20,8 @@
         <!-- 日期与总时长 -->
         <div class="panle">
             <div class="summary">
-                <div class="date">11月10日 今天</div>
-                <div class="duration">3小时44分钟</div>
+                <div class="date">11月11日 今天</div>
+                <div class="duration">2小时44分钟</div>
             </div>
 
             <!-- 顶部柱状图（每周视图） -->
@@ -38,7 +42,7 @@
                 </div>
             </div>
         </div>
-        <div class="updatetime">更新于：今天 14:46</div>
+        <div class="updatetime">更新于：今天 {{ updateTime }}</div>
         <div class="updates">
             <div>最常使用</div>
             <div class="updates-right">显示类别</div>
@@ -50,7 +54,6 @@
                 <div class="app-item" v-for="(app, index) in apps" :key="index" @click="onAppClick(app)">
                     <div class="left">
                         <img :src="app.icon" class="icon" />
-                        <!-- <span class="name">{{ app.name }}</span> -->
                     </div>
                     <div class="app-right">
                         <div class="name">{{ app.name }}</div>
@@ -62,34 +65,23 @@
                             </div>
                         </div>
                     </div>
-                    <van-icon name="arrow" color="#ccc" size="16px"  />
+                    <van-icon name="arrow" color="#ccc" size="16px" />
 
                 </div>
             </div>
-
         </div>
-
-        <!-- 分类统计 -->
-
-
-        <!-- 应用使用列表 -->
-        <!-- <div class="app-list">
-            <van-cell title="抖音" label="52分钟" icon="video-o" />
-            <van-cell title="微信" label="50分钟" icon="chat-o" />
-            <van-cell title="淘宝" label="19分钟" icon="shopping-cart-o" />
-            <van-cell title="Fuzozo芙蕾" label="16分钟" icon="smile-o" />
-        </div> -->
     </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import * as echarts from 'echarts'
-import { Icon } from 'vant'
+
 import 'vant/es/icon/style'
 
 const weekChartRef = ref(null)
 const hourChartRef = ref(null)
+const updateTime = ref('14:46')
 const apps = ref([
     {
         name: '抖音',
@@ -111,7 +103,7 @@ const apps = ref([
     },
 
 ])
-
+let chartInstance = null;
 onMounted(() => {
     // --- 每周柱状图 ---
     const weekChart = echarts.init(weekChartRef.value)
@@ -121,11 +113,10 @@ onMounted(() => {
             type: 'category',
             data: ['日', '一', '二', '三', '四', '五', '六'],
             axisLabel: { color: '#aaa', fontSize: 11 },
-            axisLine: { lineStyle: { color: '#cecece' } },
+            axisLine: { lineStyle: { color: '#ececec' } },
             axisTick: { show: false },
             splitLine: {
                 show: true,
-                height: 250,
                 lineStyle: {
                     color: '#eee',
                     type: 'dashed',
@@ -137,7 +128,13 @@ onMounted(() => {
         yAxis: {
             type: 'value',
             max: 10,
-            splitLine: { lineStyle: { color: '#ececec', type: 'slid' } },
+            interval: 2.5,
+            splitLine: {
+                show: true,
+                length: 5,
+                lineStyle: { color: '#ececec', type: 'solid' },
+
+            },
             position: 'right',
             axisLine: { show: false },
             axisTick: { show: false },
@@ -154,7 +151,9 @@ onMounted(() => {
                     return '';
                 }
             },
+
         },
+
         series: [
             {
                 name: '社交',
@@ -163,12 +162,30 @@ onMounted(() => {
                 barWidth: '50%',
                 itemStyle: {
                     color: '#3A8BFF', // 蓝色
-
                 },
-                data: [0, 1.2, 0, 0, 0, 0, 0],
+                data: [0, 0, 1, 0, 0, 0, 0],
                 label: {
                     show: false
-                }
+                },
+                markLine: {
+                    silent: true,
+                    symbol: 'none',
+                    lineStyle: {
+                        color: '#aaa', // 
+                        type: 'dashed', // 
+                        width: 1 // 
+                    },
+                    label: {
+                        color: '#888',
+                        formatter: function (value) {
+                            return '平均';
+                        },
+                        show: true
+                    },
+                    data: [
+                        { yAxis: 6.8 }
+                    ]
+                },
             },
             {
                 name: '创意',
@@ -177,7 +194,7 @@ onMounted(() => {
                 itemStyle: {
                     color: '#FCA00F' // 橙色
                 },
-                data: [0, 1.7, 0, 0, 0, 0]
+                data: [0, 0, 0.7, 0, 0, 0]
             },
             {
                 name: '购物与美食',
@@ -186,7 +203,7 @@ onMounted(() => {
                 itemStyle: {
                     color: '#40C8E0' // 蓝绿色
                 },
-                data: [0, 1, 0.5, 0, 0, 0,]
+                data: [0, 0, 0.5, 0, 0, 0,]
             },
             {
                 name: '其他',
@@ -196,16 +213,13 @@ onMounted(() => {
                     borderRadius: [4, 4, 0, 0],
                     color: '#d2d1d7' // 灰色
                 },
-                data: [7, 2, 1, 0]
-            }
+                data: [8.5, 7, 3, 0, 0, 0]
+            },
         ]
     }
     weekChart.setOption(weekOption)
 
     // --- 每小时柱状图 ---
-
-
-    let chartInstance = null;
 
     // 初始化图表
     const initChart = () => {
@@ -238,7 +252,7 @@ onMounted(() => {
                 data: ['0时', '1时', '2时', '3时', '4时', '5时', '6时', '7时', '8时', '9时', '10时', '11时', '12时', '13时', '14时', '15时', '16时', '17时', '18时', '19时', '20时', '21时', '22时', '23时'],
                 axisLine: {
                     lineStyle: {
-                        color: '#666'
+                        color: '#ececec'
                     }
                 },
                 axisLabel: {
@@ -248,19 +262,17 @@ onMounted(() => {
                 },
                 splitLine: {
                     show: true,
-                    height: 250,
                     lineStyle: {
                         color: '#eee',
                         type: 'dashed',
                         width: 1
                     },
-
                 },
 
             },
             yAxis: {
                 type: 'value',
-                splitLine: { lineStyle: { color: '#cecece', type: 'line' } },
+                splitLine: { lineStyle: { color: '#ececec', type: 'line' } },
                 position: 'right',
                 axisLabel: {
                     color: '#ccc',
@@ -278,10 +290,11 @@ onMounted(() => {
                 axisLine: { show: false },
                 axisTick: { show: false },
                 max: 60,
-                min: 0
-
+                // min: -10,
+                interval: 15
             },
             series: [
+
                 {
                     name: '社交',
                     type: 'bar',
@@ -294,7 +307,8 @@ onMounted(() => {
                     data: [0, 0, 0, 0, 0, 0, 0, 8, 5, 12, 18, 0],
                     label: {
                         show: false
-                    }
+                    },
+
                 },
                 {
                     name: '创意',
@@ -326,19 +340,15 @@ onMounted(() => {
                 }
             ]
         };
-
         chartInstance.setOption(option);
     };
-
-   
-    const handleResize = () => {
-        chartInstance?.resize();
-    };
-
     initChart();
-    handleResize()
-
+    window.addEventListener('resize', resizeChart)
 })
+
+function resizeChart() {
+    chartInstance && chartInstance.resize()
+}
 </script>
 
 <style scoped>
@@ -380,6 +390,7 @@ onMounted(() => {
 .usetit {
     padding-left: 20px;
     margin-top: 20px;
+    margin-bottom: 5px;
     font-size: 13px;
     color: #666
 }
@@ -397,9 +408,9 @@ onMounted(() => {
 .panle {
     background-color: rgba(255, 255, 255, 1);
     border-radius: 10px;
-    padding: 10px;
+    padding: 10px 10px 3px;
 
-    margin: 20px;
+    margin: 0 20px;
 }
 
 .title {
@@ -441,7 +452,7 @@ onMounted(() => {
 }
 
 .updates {
-    margin: 0 30px -10px;
+    margin: 0 30px 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -453,7 +464,7 @@ onMounted(() => {
     margin-bottom: 35px;
     font-size: 14px;
     color: #666;
-    margin-top: -10px;
+    margin-top: 10px;
 }
 
 .updates-right {
@@ -462,11 +473,6 @@ onMounted(() => {
     font-weight: 500;
 }
 
-.item {
-    /* display: flex;
-    align-items: center; */
-    gap: 4px;
-}
 
 .dot {
     display: inline-block;
@@ -480,7 +486,7 @@ onMounted(() => {
 }
 
 .green {
-    color: #4caf50;
+    color: #40C8E0;
 }
 
 .orange {
@@ -488,7 +494,7 @@ onMounted(() => {
 }
 
 .time {
-    color: #999;
+    color: #222;
 }
 
 .app-list {
@@ -541,5 +547,20 @@ onMounted(() => {
 
 .app-right {
     flex: 1;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    color: #111;
+    font-size: 16px;
+    font-weight: 600;
+
+    img {
+        width: 80px;
+        height: auto;
+    }
 }
 </style>

@@ -29,7 +29,7 @@ import HelloWorld from './components/HelloWorld.vue'
 }
 </style> -->
 <template>
-  <ScreenTime />
+   <router-view />
 </template>
 
 <script setup>
